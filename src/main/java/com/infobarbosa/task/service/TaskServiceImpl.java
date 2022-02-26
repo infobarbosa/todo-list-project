@@ -18,35 +18,22 @@ public class TaskServiceImpl implements TaskService{
     @Autowired
     private TaskRepository taskRepository;
 
-    public List<Task> getAll(){
+    public List<Task> findAll(){
         return (List<Task>) taskRepository.findAll();
     }
 
-    public Optional<Task> get(Long id){
-        return taskRepository.findById( id );
+    public Optional<Task> find(Long id){
+        return taskRepository.find( id );
     }
 
-    public Task create(Task task) {
-        Task created = taskRepository.save( task );
-        logger.debug( created.toString() );
-        return created;
-    }
+    public void save(Task task){
+        logger.debug( "Salvando a task: " + task.toString() );
 
-    public Task update(Task task, Long id){
-        logger.debug( "Atualizando task: " + task.toString() );
+        taskRepository.save( task );
 
-        return taskRepository.findById(id)
-            .map(t -> {
-                t.setDescription(task.getDescription());
-                return taskRepository.save( task );
-            })
-            .orElseGet(() -> {
-                task.setId(id);
-                return taskRepository.save( task );
-            });
     }
 
     public void delete( Long id ){
-        taskRepository.deleteById(id);
+        taskRepository.delete(id);
     }
 }

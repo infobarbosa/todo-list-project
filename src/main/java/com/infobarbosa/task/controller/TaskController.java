@@ -2,6 +2,7 @@ package com.infobarbosa.task.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.infobarbosa.task.model.Task;
 import com.infobarbosa.task.service.TaskService;
@@ -25,24 +26,27 @@ public class TaskController {
 
     @GetMapping(value = "/tasks", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Task> getAll(){
-        return taskService.getAll();
+        return taskService.findAll();
     }
 
     @GetMapping(value = "/tasks/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Optional<Task> get(@PathVariable Long id){
-        return taskService.get( id );
+        return taskService.find( id );
     }
 
     @PostMapping(value = "/tasks")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Task create(@RequestBody Task customer){
-        return taskService.create( customer );
+    public Task create(@RequestBody Task task){
+        task.setId( UUID.randomUUID() );
+        taskService.save( task );
+        return task;
     }
 
     @PutMapping(value = "/tasks/{id}")
     @ResponseStatus(code = HttpStatus.OK)
-    public Task update(@RequestBody Task customer, @PathVariable Long id){
-        return taskService.update( customer, id );
+    public Task update(@RequestBody Task task, @PathVariable Long id){
+        taskService.save( task );
+        return task;
     }
 
     @DeleteMapping(value = "/tasks/{id}")

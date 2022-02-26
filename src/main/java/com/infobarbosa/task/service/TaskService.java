@@ -8,10 +8,9 @@ import com.infobarbosa.task.model.Task;
 public interface TaskService {
     
 
-    public Task create(Task task);
-    public Task update(Task task, Long id);
+    public void save(Task task);
 
-    public Optional<Task> get(Long id);
-    public List<Task> getAll();
+    public Optional<Task> find(Long id);
+    public List<Task> findAll();
     public void delete(Long id);
 }
