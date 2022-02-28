@@ -10,6 +10,7 @@ import com.infobarbosa.task.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +31,7 @@ public class TaskController {
     }
 
     @GetMapping(value = "/tasks/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<Task> get(@PathVariable Long id){
+    public Optional<Task> getTask(@PathVariable UUID id){
         return taskService.find( id );
     }
 
@@ -44,14 +45,21 @@ public class TaskController {
 
     @PutMapping(value = "/tasks/{id}")
     @ResponseStatus(code = HttpStatus.OK)
-    public Task update(@RequestBody Task task, @PathVariable Long id){
-        taskService.save( task );
-        return task;
+    public ResponseEntity<Task> update(@RequestBody Task task, @PathVariable UUID id){
+        Optional<Task> o = taskService.find(id);
+        if(o.isPresent()){
+            Task t = o.get();
+            t.setDescription( task.getDescription() );
+            taskService.save( t );
+            return ResponseEntity.status(HttpStatus.OK).body(t);
+        }
+            
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(task);
     }
 
     @DeleteMapping(value = "/tasks/{id}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id){
+    public void delete(@PathVariable UUID id){
         taskService.delete( id );
     }
 }

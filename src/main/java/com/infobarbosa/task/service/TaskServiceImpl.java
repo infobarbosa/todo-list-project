@@ -2,6 +2,7 @@ package com.infobarbosa.task.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.infobarbosa.task.model.Task;
 import com.infobarbosa.task.repository.TaskRepository;
@@ -22,7 +23,7 @@ public class TaskServiceImpl implements TaskService{
         return (List<Task>) taskRepository.findAll();
     }
 
-    public Optional<Task> find(Long id){
+    public Optional<Task> find(UUID id){
         return taskRepository.find( id );
     }
 
@@ -33,7 +34,7 @@ public class TaskServiceImpl implements TaskService{
 
     }
 
-    public void delete( Long id ){
+    public void delete( UUID id ){
         taskRepository.delete(id);
     }
 }
