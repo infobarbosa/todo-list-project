@@ -2,19 +2,13 @@ package com.infobarbosa.task.repository;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectId;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infobarbosa.task.model.Task;
@@ -68,12 +62,16 @@ public class TaskRepositoryS3Impl implements TaskRepository{
     }
 
     public Optional<Task> find(UUID id){
+        return find(id + ".json");
+    }
+
+    public Optional<Task> find(String key){
         Task task = null;
 
         try{
             S3Object o = s3.getObject( 
                 new GetObjectRequest( 
-                    new S3ObjectId(bucketName, id + ".json") 
+                    new S3ObjectId(bucketName, key)
                 ) 
             );
     
@@ -87,13 +85,25 @@ public class TaskRepositoryS3Impl implements TaskRepository{
             }
     
         }catch(AmazonS3Exception e){
-            logger.error( "Problema buscando objeto id " + id + ". Error code " + e.getErrorCode());            
+            logger.error( "Problema buscando objeto id " + key + ". Error code " + e.getErrorCode());
         }
 
         return Optional.ofNullable(task);
     }
 
-    public List<Task> findAll(){/*TODO*/ return null;}
+    public List<Task> findAll(){
+        List<Task> tasks = new ArrayList<>();
+        logger.info("Metodo findAll de TaskRepositoryS3Impl chamado");
+        ObjectListing list = s3.listObjects( bucketName );
+        List<S3ObjectSummary> summaries = list.getObjectSummaries();
+        summaries.stream().forEach(
+                summary -> tasks.add(
+                        find( summary.getKey() ).get()
+                )
+        );
+
+        return tasks;
+    }
 
     private void createBucket(String bucketName){
         logger.info("createBucket chamado! " + bucketName);
