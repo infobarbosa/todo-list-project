@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -57,23 +59,35 @@ public class TaskRepositoryS3Impl implements TaskRepository{
         }
     };
     
-    public void delete(UUID id){ /*TODO*/ }
+    public void delete(UUID id){
+        logger.info("Deletando o objeto " + id);
+        s3.deleteObject(
+            new DeleteObjectRequest(bucketName, id + ".json")
+        ); 
+        logger.info("Objeto " + id + " deletado.");
+    }
 
     public Optional<Task> find(UUID id){
-        S3Object o = s3.getObject( 
-            new GetObjectRequest( 
-                new S3ObjectId(bucketName, id + ".json") 
-            ) 
-        );
-
-        S3ObjectInputStream stream = o.getObjectContent();
         Task task = null;
-        try {
-            task = new ObjectMapper().readValue(stream, Task.class);
-            return Optional.of(task);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+
+        try{
+            S3Object o = s3.getObject( 
+                new GetObjectRequest( 
+                    new S3ObjectId(bucketName, id + ".json") 
+                ) 
+            );
+    
+            S3ObjectInputStream stream = o.getObjectContent();
+            try {
+                task = new ObjectMapper().readValue(stream, Task.class);
+                return Optional.of(task);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+    
+        }catch(AmazonS3Exception e){
+            logger.error( "Problema buscando objeto id " + id + ". Error code " + e.getErrorCode());            
         }
 
         return Optional.ofNullable(task);

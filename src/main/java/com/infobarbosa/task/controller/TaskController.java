@@ -31,8 +31,15 @@ public class TaskController {
     }
 
     @GetMapping(value = "/tasks/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<Task> getTask(@PathVariable UUID id){
-        return taskService.find( id );
+    public ResponseEntity<Task> getTask(@PathVariable UUID id){
+        Task t = null;
+        Optional<Task> o = taskService.find( id );
+        if( o.isPresent() ){
+            t = o.get();
+            return ResponseEntity.status(HttpStatus.OK).body( t );
+        }
+            
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(t);
     }
 
     @PostMapping(value = "/tasks")
